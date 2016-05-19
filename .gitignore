@@ -1,0 +1,10 @@
+# Specifies intentionally untracked files to ignore when using Git
+# http://git-scm.com/docs/gitignore
+
+/.idea
+/*.iml
+/.classpath
+/.project
+/.settings
+/*.log
+/log.txt

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
+        id="com.naturalcycles.plugins.sk"
+        version="0.0.1">
+  <name>SK</name>
+
+  <engines>
+    <engine name="cordova" version=">=5.0.0"/>
+  </engines>
+
+  <js-module src="www/sk.js" name="sk">
+    <clobbers target="sk" />
+  </js-module>
+
+  <platform name="ios">
+    <info>
+      com.naturalcycles.plugins.sk info there!
+    </info>
+    <config-file target="config.xml" parent="/*">
+      <feature name="SKMain">
+        <param name="ios-package" value="HWPSKMain"/>
+      </feature>
+    </config-file>
+
+    <header-file src="src/ios/Bridging-Header.h" />
+    <source-file src="src/ios/SKMain.swift"/>
+    <source-file src="src/ios/SKProduct.swift"/>
+  </platform>
+</plugin>
