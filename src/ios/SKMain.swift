@@ -135,19 +135,6 @@ import StoreKit
     func refreshReceipt(command: CDVInvokedUrlCommand) {
         print("refreshReceipt")
 
-        // SKPaymentQueue.defaultQueue().removeTransactionObserver(self)
-        SKPaymentQueue.defaultQueue().addTransactionObserver(self)
-
-        /* let productIds: Set<String> = [
-            "com.naturalcycles.cordova.yearly3",
-            "com.naturalcycles.cordova.monthly3",
-            "com.naturalcycles.cordova.wrongly3",
-        ]*/
-        var productIds: Set<String> = []
-        for a in command.arguments {
-            productIds.insert(a as! String)
-        }
-
         let req:SKReceiptRefreshRequest = SKReceiptRefreshRequest()
         req.delegate = self
         req.start()

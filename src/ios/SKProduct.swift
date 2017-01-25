@@ -9,10 +9,10 @@ extension SKProduct {
     }
 
     func currency() -> String {
-        /* let formatter = NSNumberFormatter()
+        let formatter = NSNumberFormatter()
         formatter.locale = self.priceLocale
-        return formatter.internationalCurrencySymbol*/
-        return self.priceLocale.objectForKey(NSLocaleCurrencySymbol) as! String
+        return formatter.internationalCurrencySymbol
+        // return self.priceLocale.objectForKey(NSLocaleCurrencySymbol) as! String
     }
 
     func country() -> String {
