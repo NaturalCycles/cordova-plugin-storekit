@@ -1,0 +1,27 @@
+{
+  "name": "cordova-plugin-storekit",
+  "author": "Kirill Groshkov",
+  "version": "1.0.0",
+  "description": "cordova plugin to use iOS StoreKit",
+  "cordova": {
+    "id": "cordova-plugin-storekit",
+    "platforms": [
+      "ios"
+    ]
+  },
+  "keywords": [
+    "cordova",
+    "StoreKit"
+  ],
+  "engines": [
+    {
+      "name": "cordova",
+      "version": ">=5.0.0"
+    }
+  ],
+  "license": "Apache 2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NaturalCycles/cordova-plugin-storekit.git"
+  }
+}
