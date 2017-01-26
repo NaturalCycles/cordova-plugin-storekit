@@ -6,6 +6,15 @@ import StoreKit
     // Cached Products
     var productById: [String: SKProduct] = [:]
 
+    override func pluginInitialize() {
+        print("pluginInitialize")
+
+        // logPretty(productById, name: "productById")
+
+        productById = [:]
+        // logPretty(productById, name: "productById")
+    }
+
     /* func greet(command: CDVInvokedUrlCommand) {
         let message = command.arguments[0] as! String
 
@@ -71,6 +80,8 @@ import StoreKit
 
     func getProducts(command: CDVInvokedUrlCommand) {
         print("getProducts args: \(command.arguments)")
+
+        logPretty(productById, name: "productById")
 
         // SKPaymentQueue.defaultQueue().removeTransactionObserver(self)
         SKPaymentQueue.defaultQueue().addTransactionObserver(self)
@@ -205,7 +216,7 @@ import StoreKit
 
         let receiptUrl: NSURL? = NSBundle.mainBundle().appStoreReceiptURL
         print("\(receiptUrl)")
-        
+
         if receiptUrl == nil {
             print("receiptUrl is nil")
             return returnOk(command, msg: "") // empty string = no receipt
@@ -213,7 +224,7 @@ import StoreKit
 
         let receipt: NSData? = NSData(contentsOfURL: receiptUrl!)
         // print("\(receipt)")
-        
+
         if receipt == nil {
             print("receipt is nil")
             return returnOk(command, msg: "") // empty string = no receipt
@@ -224,14 +235,14 @@ import StoreKit
 
         return returnOk(command, msg: "\(receiptStr)")
     }
-    
+
     func receiptFound(receiptUrl: NSURL?) -> Bool {
         let receiptError: NSErrorPointer = nil
-        
+
         if let isReachable = receiptUrl?.checkResourceIsReachableAndReturnError(receiptError) {
             return isReachable
         }
-        
+
         return false
     }
 
@@ -266,14 +277,14 @@ import StoreKit
             print("Trans date: \(t.transactionDate)")
             print("Trans id: \(t.transactionIdentifier)")
             print("Trans payment: \(t.payment)")
-            
+
             trans.append(serTransaction(t))
         }
-        
+
         let details = [
             "transactions": trans,
         ]
-        
+
         dispatchEvent("SKTransactionUpdated", details: details)
     }
 
@@ -335,7 +346,7 @@ import StoreKit
         if t.originalTransaction != nil {
             r["originalTransaction"] = serTransaction(t.originalTransaction!)
         }
-        
+
         return r
     }
 
@@ -366,8 +377,13 @@ import StoreKit
     }
 
     func logPretty (o: AnyObject, name: String) {
-        let jsonData = try! NSJSONSerialization.dataWithJSONObject(o, options: NSJSONWritingOptions.PrettyPrinted)
-        let jsonString = NSString(data: jsonData, encoding: NSUTF8StringEncoding)!
-        print("\(name): \(jsonString)")
+        print("logPretty \(name) started")
+        do {
+            let jsonData = try! NSJSONSerialization.dataWithJSONObject(o, options: NSJSONWritingOptions.PrettyPrinted)
+            let jsonString = NSString(data: jsonData, encoding: NSUTF8StringEncoding)!
+            print("\(name): \(jsonString)")
+        } catch _ {
+            print("exception in logPretty")
+        }
     }
 }
