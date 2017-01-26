@@ -36,19 +36,19 @@ import StoreKit
         commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId)
     }*/
 
-    func restoreCompletedTransactions(command: CDVInvokedUrlCommand) {
+    func restoreCompletedTransactions(_ command: CDVInvokedUrlCommand) {
         print("restoreCompletedTransactions")
 
-        SKPaymentQueue.defaultQueue().restoreCompletedTransactions()
+        SKPaymentQueue.default().restoreCompletedTransactions()
 
-        let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAsString: "ok")
-        commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId)
+        let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "ok")
+        commandDelegate!.send(pluginResult, callbackId: command.callbackId)
     }
 
-    func getTransactions(command: CDVInvokedUrlCommand) {
+    func getTransactions(_ command: CDVInvokedUrlCommand) {
         print("getTransactions")
 
-        let transactions = SKPaymentQueue.defaultQueue().transactions
+        let transactions = SKPaymentQueue.default().transactions
         print("getTransactions count: \(transactions.count)")
 
         var tr: [[String: AnyObject]] = []
@@ -58,12 +58,12 @@ import StoreKit
         }
 
         do {
-            let jsonData = try NSJSONSerialization.dataWithJSONObject(tr, options: NSJSONWritingOptions(rawValue: 0))
-            let jsonString = NSString(data: jsonData, encoding: NSUTF8StringEncoding)!
+            let jsonData = try JSONSerialization.data(withJSONObject: tr, options: JSONSerialization.WritingOptions(rawValue: 0))
+            let jsonString = NSString(data: jsonData, encoding: String.Encoding.utf8.rawValue)!
             print("json: \(jsonString)")
 
-            let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAsString: jsonString as String)
-            commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId)
+            let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: jsonString as String)
+            commandDelegate!.send(pluginResult, callbackId: command.callbackId)
         } catch {
             print("error default")
             return returnError(command, msg: "json error")
@@ -78,13 +78,13 @@ import StoreKit
         commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId)
     }*/
 
-    func getProducts(command: CDVInvokedUrlCommand) {
+    func getProducts(_ command: CDVInvokedUrlCommand) {
         print("getProducts args: \(command.arguments)")
 
-        logPretty(productById, name: "productById")
+        logPretty(productById as AnyObject, name: "productById")
 
         // SKPaymentQueue.defaultQueue().removeTransactionObserver(self)
-        SKPaymentQueue.defaultQueue().addTransactionObserver(self)
+        SKPaymentQueue.default().add(self)
 
         /* let productIds: Set<String> = [
             "com.naturalcycles.cordova.yearly3",
@@ -103,7 +103,7 @@ import StoreKit
         returnOk(command, msg: "")
     }
 
-    func productsRequest(request: SKProductsRequest, didReceiveResponse response: SKProductsResponse) {
+    func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
         print("callback from productsRequest")
         // print("didReceive: \(response.didR)")
         print(request)
@@ -132,18 +132,18 @@ import StoreKit
         }
 
         // commandDelegate!.evalJs("alert('bzzz10')")
-        logPretty(products, name: "products")
+        logPretty(products as AnyObject, name: "products")
 
         let details = [
             "canMakePayments": canMakePayments,
             "invalidProductIdentifiers": invalidProductIdentifiers,
             "products": products,
-        ]
+        ] as [String : Any]
 
-        dispatchEvent("SKProductsResponse", details: details)
+        dispatchEvent("SKProductsResponse", details: details as AnyObject)
     }
 
-    func refreshReceipt(command: CDVInvokedUrlCommand) {
+    func refreshReceipt(_ command: CDVInvokedUrlCommand) {
         print("refreshReceipt")
 
         let req:SKReceiptRefreshRequest = SKReceiptRefreshRequest()
@@ -153,7 +153,7 @@ import StoreKit
         returnOk(command, msg: "")
     }
 
-    func order(command: CDVInvokedUrlCommand) {
+    func order(_ command: CDVInvokedUrlCommand) {
         print("order args: \(command.arguments)")
 
         let pid = command.arguments[0] as! String
@@ -165,7 +165,7 @@ import StoreKit
         }
 
         let payment = SKPayment(product: product!)
-        SKPaymentQueue.defaultQueue().addPayment(payment)
+        SKPaymentQueue.default().add(payment)
         print("Added to queue: \(pid)")
 
         let orderRequest = SKRequest()
@@ -185,18 +185,18 @@ import StoreKit
         commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId)*/
     }
 
-    func finishTransaction(command: CDVInvokedUrlCommand) {
+    func finishTransaction(_ command: CDVInvokedUrlCommand) {
         print("finishTransaction args: \(command.arguments)")
 
         let tid = command.arguments[0] as! String
         print("transId: \(tid)")
 
         // Try to find it
-        print("getTransactions count: \(SKPaymentQueue.defaultQueue().transactions.count)")
+        print("getTransactions count: \(SKPaymentQueue.default().transactions.count)")
 
         var tr: SKPaymentTransaction?
 
-        for t: SKPaymentTransaction in SKPaymentQueue.defaultQueue().transactions {
+        for t: SKPaymentTransaction in SKPaymentQueue.default().transactions {
             if t.transactionIdentifier! == tid {
                 tr = t
                 break
@@ -206,15 +206,15 @@ import StoreKit
         if tr == nil {
             return returnError(command, msg: "Transaction not found")
         } else {
-            SKPaymentQueue.defaultQueue().finishTransaction(tr!)
+            SKPaymentQueue.default().finishTransaction(tr!)
             return returnOk(command, msg: "ok")
         }
     }
 
-    func getReceipt(command: CDVInvokedUrlCommand) {
+    func getReceipt(_ command: CDVInvokedUrlCommand) {
         print("getReceipt")
 
-        let receiptUrl: NSURL? = NSBundle.mainBundle().appStoreReceiptURL
+        let receiptUrl: URL? = Bundle.main.appStoreReceiptURL
         print("\(receiptUrl)")
 
         if receiptUrl == nil {
@@ -222,7 +222,7 @@ import StoreKit
             return returnOk(command, msg: "") // empty string = no receipt
         }
 
-        let receipt: NSData? = NSData(contentsOfURL: receiptUrl!)
+        let receipt: Data? = try? Data(contentsOf: receiptUrl!)
         // print("\(receipt)")
 
         if receipt == nil {
@@ -230,40 +230,40 @@ import StoreKit
             return returnOk(command, msg: "") // empty string = no receipt
         }
 
-        let receiptStr: NSString = receipt!.base64EncodedStringWithOptions(NSDataBase64EncodingOptions(rawValue: 0))
+        let receiptStr: NSString = receipt!.base64EncodedString(options: NSData.Base64EncodingOptions(rawValue: 0)) as NSString
         print("\(receiptStr)")
 
         return returnOk(command, msg: "\(receiptStr)")
     }
 
-    func receiptFound(receiptUrl: NSURL?) -> Bool {
-        let receiptError: NSErrorPointer = nil
+    func receiptFound(_ receiptUrl: URL?) -> Bool {
+        let receiptError: NSErrorPointer? = nil
 
-        if let isReachable = receiptUrl?.checkResourceIsReachableAndReturnError(receiptError) {
+        if let isReachable = (receiptUrl as NSURL?)?.checkResourceIsReachableAndReturnError(receiptError!) {
             return isReachable
         }
 
         return false
     }
 
-    func requestDidFinish(request: SKRequest) {
+    func requestDidFinish(_ request: SKRequest) {
         print("request finished: \(request)")
 
-        let details = []
-        dispatchEvent("SKRequestDidFinish", details: details)
+        let details = [AnyObject]()
+        dispatchEvent("SKRequestDidFinish", details: details as AnyObject)
     }
 
-    func request(request: SKRequest, didFailWithError error: NSError) {
+    func request(_ request: SKRequest, didFailWithError error: Error) {
         print("request error: \(error)")
 
         let details = [
             "e": error.localizedDescription,
         ]
 
-        dispatchEvent("SKError", details: details)
+        dispatchEvent("SKError", details: details as AnyObject)
     }
 
-    func paymentQueue(queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
+    func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
         print("paymentQueue updatedTransactions!")
         print("paymentQueue callback count: \(transactions.count)")
 
@@ -272,7 +272,7 @@ import StoreKit
             print("Trans: \(t)")
             print("Trans state: \(t.transactionState)")
             print("Trans state raw: \(t.transactionState.rawValue)")
-            print("original: \(t.originalTransaction)")
+            print("original: \(t.original)")
             print("Trans error: \(t.error)")
             print("Trans date: \(t.transactionDate)")
             print("Trans id: \(t.transactionIdentifier)")
@@ -285,10 +285,10 @@ import StoreKit
             "transactions": trans,
         ]
 
-        dispatchEvent("SKTransactionUpdated", details: details)
+        dispatchEvent("SKTransactionUpdated", details: details as AnyObject)
     }
 
-    func paymentQueue(queue: SKPaymentQueue, removedTransactions transactions: [SKPaymentTransaction]) {
+    func paymentQueue(_ queue: SKPaymentQueue, removedTransactions transactions: [SKPaymentTransaction]) {
         print("paymentQueue removedTransactions!")
         print("paymentQueue callback count: \(transactions.count)")
 
@@ -302,70 +302,70 @@ import StoreKit
                 "transactions": trans,
         ]
 
-        dispatchEvent("SKTransactionRemoved", details: details)
+        dispatchEvent("SKTransactionRemoved", details: details as AnyObject)
     }
 
-    func paymentQueue(queue: SKPaymentQueue, restoreCompletedTransactionsFailedWithError error: NSError) {
+    func paymentQueue(_ queue: SKPaymentQueue, restoreCompletedTransactionsFailedWithError error: Error) {
         print("paymentQueue restoreCompletedTransactionsFailedWithError! \(error)")
     }
 
-    func paymentQueueRestoreCompletedTransactionsFinished(queue: SKPaymentQueue) {
+    func paymentQueueRestoreCompletedTransactionsFinished(_ queue: SKPaymentQueue) {
         print("paymentQueueRestoreCompletedTransactionsFinished")
     }
 
-    func serProduct (p: SKProduct) -> [String: AnyObject] {
-        let price = Int(p.price.decimalNumberByMultiplyingBy(NSDecimalNumber(int: 100)).intValue)
+    func serProduct (_ p: SKProduct) -> [String: AnyObject] {
+        let price = Int(p.price.multiplying(by: NSDecimalNumber(value: 100 as Int32)).int32Value)
         return [
-            "localizedTitle": p.localizedTitle,
-            "localizedDescription": p.localizedDescription,
-            "price": price,
-            "productIdentifier": p.productIdentifier,
-            "localizedPrice": p.localizedPrice(),
-            "currency": p.currency(),
-            "country": p.country(),
+            "localizedTitle": p.localizedTitle as AnyObject,
+            "localizedDescription": p.localizedDescription as AnyObject,
+            "price": price as AnyObject,
+            "productIdentifier": p.productIdentifier as AnyObject,
+            "localizedPrice": p.localizedPrice() as AnyObject,
+            "currency": p.currency() as AnyObject,
+            "country": p.country() as AnyObject,
         ]
     }
 
-    func serTransaction (t: SKPaymentTransaction) -> [String: AnyObject] {
+    func serTransaction (_ t: SKPaymentTransaction) -> [String: AnyObject] {
         var r: [String: AnyObject] = [
             // "transactionState": "\(t.transactionState)",
-            "transactionState": "\(t.transactionState.rawValue)",
+            "transactionState": "\(t.transactionState.rawValue)" as AnyObject,
             // "payment": t.payment,
         ]
         if t.error != nil {
             // Optional(Error Domain=SKErrorDomain Code=0 "Cannot connect to iTunes Store" UserInfo={NSLocalizedDescription=Cannot connect to iTunes Store})
-            r["error"] = "\(t.error!.localizedDescription)"
+            r["error"] = "\(t.error!.localizedDescription)" as AnyObject?
         }
         if t.transactionDate != nil {
             let tdate = Int(t.transactionDate!.timeIntervalSince1970)
-            r["transactionDate"] = "\(tdate)"
+            r["transactionDate"] = "\(tdate)" as AnyObject?
         }
         if t.transactionIdentifier != nil {
-            r["transactionIdentifier"] = t.transactionIdentifier!
+            r["transactionIdentifier"] = t.transactionIdentifier! as AnyObject?
         }
-        if t.originalTransaction != nil {
-            r["originalTransaction"] = serTransaction(t.originalTransaction!)
+        if t.original != nil {
+            r["originalTransaction"] = serTransaction(t.original!) as AnyObject?
         }
 
         return r
     }
 
-    func returnOk (command: CDVInvokedUrlCommand, msg: String) {
+    func returnOk (_ command: CDVInvokedUrlCommand, msg: String) {
         print("returnOk: \(msg)")
-        let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAsString: msg)
-        commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId)
+        let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: msg)
+        commandDelegate!.send(pluginResult, callbackId: command.callbackId)
     }
 
-    func returnError (command: CDVInvokedUrlCommand, msg: String) {
+    func returnError (_ command: CDVInvokedUrlCommand, msg: String) {
         print("returnError: \(msg)")
-        let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAsString: msg)
-        commandDelegate!.sendPluginResult(pluginResult, callbackId: command.callbackId)
+        let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: msg)
+        commandDelegate!.send(pluginResult, callbackId: command.callbackId)
     }
 
-    func dispatchEvent (eventName: String, details: AnyObject) {
+    func dispatchEvent (_ eventName: String, details: AnyObject) {
         do {
-            let jsonData = try NSJSONSerialization.dataWithJSONObject(details, options: NSJSONWritingOptions(rawValue: 0))
-            let jsonString = NSString(data: jsonData, encoding: NSUTF8StringEncoding)!
+            let jsonData = try JSONSerialization.data(withJSONObject: details, options: JSONSerialization.WritingOptions(rawValue: 0))
+            let jsonString = NSString(data: jsonData, encoding: String.Encoding.utf8.rawValue)!
             print("json: \(jsonString)")
 
             commandDelegate!.evalJs("window.dispatchEvent(new CustomEvent('\(eventName)', {detail: \(jsonString)}))")
@@ -376,11 +376,11 @@ import StoreKit
         }
     }
 
-    func logPretty (o: AnyObject, name: String) {
+    func logPretty (_ o: AnyObject, name: String) {
         print("logPretty \(name) started")
         do {
-            let jsonData = try! NSJSONSerialization.dataWithJSONObject(o, options: NSJSONWritingOptions.PrettyPrinted)
-            let jsonString = NSString(data: jsonData, encoding: NSUTF8StringEncoding)!
+            let jsonData = try! JSONSerialization.data(withJSONObject: o, options: JSONSerialization.WritingOptions.prettyPrinted)
+            let jsonString = NSString(data: jsonData, encoding: String.Encoding.utf8.rawValue)!
             print("\(name): \(jsonString)")
         } catch _ {
             print("exception in logPretty")
