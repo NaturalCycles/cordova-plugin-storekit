@@ -2,20 +2,20 @@ import StoreKit
 
 extension SKProduct {
     func localizedPrice() -> String {
-        let formatter = NSNumberFormatter()
-        formatter.numberStyle = .CurrencyStyle
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
         formatter.locale = self.priceLocale
-        return formatter.stringFromNumber(self.price)!
+        return formatter.string(from: self.price)!
     }
 
     func currency() -> String {
-        let formatter = NSNumberFormatter()
+        let formatter = NumberFormatter()
         formatter.locale = self.priceLocale
         return formatter.internationalCurrencySymbol
         // return self.priceLocale.objectForKey(NSLocaleCurrencySymbol) as! String
     }
 
     func country() -> String {
-        return self.priceLocale.objectForKey(NSLocaleCountryCode) as! String
+        return (self.priceLocale as NSLocale).object(forKey: NSLocale.Key.countryCode) as! String
     }
 }
