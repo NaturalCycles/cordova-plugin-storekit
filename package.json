@@ -1,7 +1,7 @@
 {
   "name": "cordova-plugin-storekit",
   "author": "Kirill Groshkov",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "cordova plugin to use iOS StoreKit",
   "cordova": {
     "id": "cordova-plugin-storekit",
